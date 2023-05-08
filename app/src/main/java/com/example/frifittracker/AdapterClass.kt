@@ -15,6 +15,15 @@ class AdapterClass: RecyclerView.Adapter<AdapterClass.ViewHolder>() {
     private var exeAttrList = arrayListOf<SessionItem>(SessionItem(3,8,70))
     private var exeWeightList = arrayListOf<Int>(exeAttrList[0].getFullWeight())
 
+    fun addExeName(name: String) {
+        exeNameList.add(name)
+    }
+
+    fun addSessionItem(sessionItem: SessionItem) {
+        exeAttrList.add(sessionItem)
+        exeWeightList.add(sessionItem.getFullWeight())
+    }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context).inflate(R.layout.exe_card, parent, false)

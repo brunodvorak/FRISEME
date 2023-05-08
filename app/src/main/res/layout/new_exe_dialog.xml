@@ -17,7 +17,7 @@
         android:layout_marginTop="16dp"
         android:ems="10"
         android:hint="Názov cviku:"
-        android:inputType="textPersonName"
+        android:inputType="textPersonName|text"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

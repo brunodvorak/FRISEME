@@ -68,6 +68,24 @@ class SessionActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener 
     }
 
     private fun saveExe() {
+        val exeNameView = findViewById<EditText>(R.id.exe_name_input)
+        val numSetsView = findViewById<EditText>(R.id.num_of_sets_input)
+        val numRepsView = findViewById<EditText>(R.id.num_of_rep_input)
+        val exeWeightView = findViewById<EditText>(R.id.exe_weight_input)
+
+        val exeName = exeNameView.text.toString().trim()
+        val numSets = numSetsView.text.toString().toInt()
+        val numReps = numRepsView.text.toString().toInt()
+        val exeWeight = exeWeightView.text.toString().toInt()
+
+        val sessionItem = SessionItem(numSets, numReps, exeWeight)
+
+        val recyclerView = findViewById<RecyclerView>(R.id.sessionItemsList)
+        val adapter = recyclerView.adapter as AdapterClass
+
+        adapter.addExeName(exeName)
+        adapter.addSessionItem(sessionItem)
+        adapter.notifyDataSetChanged()
     }
 
     //Vytvorí menu pre Toolbar
