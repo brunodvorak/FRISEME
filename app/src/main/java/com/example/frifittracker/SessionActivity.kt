@@ -68,32 +68,6 @@ class SessionActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener 
     }
 
     private fun saveExe() {
-        // Get references to the EditText views
-        val nameInput = dialog?.findViewById<EditText>(R.id.exe_name_input)
-        val setsInput = dialog?.findViewById<EditText>(R.id.num_of_sets_input)
-        val repsInput = dialog?.findViewById<EditText>(R.id.num_of_rep_input)
-        val weightInput = dialog?.findViewById<EditText>(R.id.exe_weight_input)
-
-        // Get the values entered in the EditText views
-        val name = nameInput?.text?.toString() ?: ""
-        val sets = setsInput?.text?.toString()?.toIntOrNull() ?: 0
-        val reps = repsInput?.text?.toString()?.toIntOrNull() ?: 0
-        val weight = weightInput?.text?.toString()?.toIntOrNull() ?: 0
-
-        // Create a new SessionItem object
-        val newItem = SessionItem(sets, reps, weight)
-
-        // Update the ArrayLists
-        exeNameList.add(name)
-        exeAttrList.add(newItem)
-        exeWeightList.add(newItem.getFullWeight())
-
-        // Update the RecyclerView adapter data source
-        val adapter = recyclerView.adapter as ExerciseListAdapter
-        adapter.addExercise(name, newItem.getFullWeight())
-
-        // Notify the adapter that the data has changed
-        adapter.notifyDataSetChanged()
     }
 
     //Vytvorí menu pre Toolbar
