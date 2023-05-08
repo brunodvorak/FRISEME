@@ -4,6 +4,7 @@ package com.example.frifittracker
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import sessionRecyclerView.SessionItem
@@ -14,12 +15,6 @@ class AdapterClass: RecyclerView.Adapter<AdapterClass.ViewHolder>() {
     private var exeAttrList = arrayListOf<SessionItem>(SessionItem(3,8,70))
     private var exeWeightList = arrayListOf<Int>(exeAttrList[0].getFullWeight())
 
-
-    fun addSession(exeName: String, exeAttr: SessionItem, exeWeight: Int) {
-        exeNameList.add(exeName)
-        exeAttrList.add(exeAttr)
-        exeWeightList.add(exeWeight)
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context).inflate(R.layout.exe_card, parent, false)
