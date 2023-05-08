@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/save_session_button"
+        android:icon="@drawable/add_button"
+        android:title="Add_button"
+        app:showAsAction="ifRoom" >
+
+        <menu>
+
+            <item
+                android:id="@+id/add_session"
+                android:title="Pridaj tréning"/>
+            <item
+                android:id="@+id/new_session"
+                android:title="Nový tréning"/>
+
+        </menu>
+    </item>
+
+
+    <item android:id="@+id/saved_sessions"
+        android:title="Uložené tréningy"
+        app:showAsAction="never"
+        />
+
+    <item android:id="@+id/params"
+        android:title="Miery"
+        app:showAsAction="never"
+        />
+
+</menu>
