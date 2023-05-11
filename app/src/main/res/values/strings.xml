@@ -2,4 +2,10 @@
     <string name="app_name">FRIfitTracker</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="pokracuj">Pokračuj</string>
+    <string name="nazov_cviku">Názov cviku:</string>
+    <string name="pocet_serii">Počet sérií:</string>
+    <string name="pocet_opakovani">Počet opakovaní:</string>
+    <string name="uloz">Ulož</string>
+    <string name="vaha">Váha:</string>
 </resources>

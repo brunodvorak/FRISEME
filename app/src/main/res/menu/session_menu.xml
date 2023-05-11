@@ -16,4 +16,11 @@
 
     </item>
 
+    <item android:id="@+id/save_session_button2"
+        android:icon="@drawable/baseline_keyboard_arrow_left_24"
+        android:title="Save_session_button"
+        app:showAsAction="always" >
+
+    </item>
+
 </menu>

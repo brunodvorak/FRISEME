@@ -10,7 +10,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.FRIfitTracker"
-        tools:targetApi="31">
+        android:enableOnBackInvokedCallback="true"
+
+        tools:targetApi="33">
         <activity
             android:name=".SessionActivity"
             android:exported="false" />

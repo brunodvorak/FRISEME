@@ -24,28 +24,13 @@
 
     <EditText
         android:id="@+id/sessionNameText"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="Názov tréningu:"
         android:inputType="textPersonName"
         android:minHeight="48dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/newSessionToolbar" />
-
-    <TextView
-        android:id="@+id/sessionDateText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="Dátum:"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/sessionNameText"
         app:layout_constraintTop_toBottomOf="@+id/newSessionToolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
