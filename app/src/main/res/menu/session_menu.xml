@@ -4,23 +4,17 @@
 
     <item android:id="@+id/add_exe_button"
         android:icon="@drawable/add_button"
-        android:title="Save_session_button"
+        android:title="@string/zero_res"
         app:showAsAction="always" >
 
     </item>
 
     <item android:id="@+id/save_session_button"
         android:icon="@drawable/save_button_icon"
-        android:title="Save_session_button"
+        android:title="@string/zero_res"
         app:showAsAction="always" >
 
     </item>
 
-    <item android:id="@+id/save_session_button2"
-        android:icon="@drawable/baseline_keyboard_arrow_left_24"
-        android:title="Save_session_button"
-        app:showAsAction="always" >
-
-    </item>
 
 </menu>

@@ -5,16 +5,18 @@
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.FRIfitTracker"
-        android:enableOnBackInvokedCallback="true"
-
         tools:targetApi="33">
         <activity
-            android:name=".SessionActivity"
+            android:name=".tracker.BodyTrackerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".session.SessionActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

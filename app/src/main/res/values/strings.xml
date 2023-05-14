@@ -8,4 +8,13 @@
     <string name="pocet_opakovani">Počet opakovaní:</string>
     <string name="uloz">Ulož</string>
     <string name="vaha">Váha:</string>
+    <string name="exercise_name_res">Názov cviku</string>
+    <string name="textview_res">TextView</string>
+    <string name="exe_weight_res">Celková váha</string>
+    <string name="value_input_res">Zadaj hodnotu:</string>
+    <string name="body_part_res">Časť tela</string>
+    <string name="zero_res">0</string>
+    <string name="add_button_res">Add_button</string>
+    <string name="manage_training_res">Uprav tréning</string>
+    <string name="body_tracker_res">Body tracker</string>
 </resources>
