@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/save_values_button"
+    android:icon="@drawable/save_button_icon"
+    android:title="@string/zero_res"
+    app:showAsAction="always" >
+
+</item>
+
+</menu>
