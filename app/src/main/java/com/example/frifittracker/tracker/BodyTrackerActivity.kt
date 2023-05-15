@@ -1,20 +1,15 @@
 package com.example.frifittracker.tracker
 
-import TrackerDataDatabase
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.frifittracker.R
-import com.example.frifittracker.tracker.trackerDatabase.TrackerEntity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Activity for managing body tracker data.
@@ -23,6 +18,7 @@ class BodyTrackerActivity : AppCompatActivity() {
 
     private lateinit var layoutManager: RecyclerView.LayoutManager
     private lateinit var adapter: TrackerAdapterClass
+    private lateinit var bodyTrackerViewModel: BodyTrackerActivityViewModel
 
 
     /**
@@ -44,71 +40,11 @@ class BodyTrackerActivity : AppCompatActivity() {
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar?>(R.id.tracker_Toolbar)
         setSupportActionBar(toolbar)
 
-        loadValues()
-    }
-
-    /**
-     * Loads the tracker values from the database.
-     * Retrieves the values from the database using the trackerDataClassDao.
-     * Converts the retrieved TrackerEntity objects into TrackerItem objects.
-     * Updates the adapter with the loaded values and notifies the adapter of the data change.
-     */
-    private fun loadValues() {
-        val database = TrackerDataDatabase.getInstance(applicationContext)
-
-        GlobalScope.launch(Dispatchers.IO) {
-
-            val trackerEntities = database.trackerDataClassDao.getValues()
-
-            val trackerList = trackerEntities.map { trackerItem ->
-                TrackerItem(
-                    bodyPart = trackerItem.getBodyPart(),
-                    value = trackerItem.getValue(),
-                    difference = trackerItem.getDifference()
-                )
-            }
-
-            withContext(Dispatchers.Main) {
-                if (trackerList.isNotEmpty()) {
-                    adapter.setBodyPartsList(ArrayList(trackerList))
-                    adapter.notifyDataSetChanged()
-                }
-            }
-        }
-    }
-
-    /**
-     * Saves the tracker values to the database.
-     * Retrieves the values from the adapter and converts them into TrackerEntity objects.
-     * Deletes existing values in the database and inserts the new values.
-     * Displays a toast message indicating that the values have been saved.
-     * Finishes the activity.
-     */
-    private fun saveValues() {
-        val trackerList = adapter.getBodyPartsList()
-
-        val trackerEntities = trackerList.map { trackerItem ->
-            TrackerEntity(
-                bodyPart = trackerItem.getBodyPart(),
-                value = trackerItem.getValue(),
-                difference = trackerItem.getDifference()
-            )
-        }
-
-        val database = TrackerDataDatabase.getInstance(applicationContext)
-
-        GlobalScope.launch(Dispatchers.IO) {
-            database.trackerDataClassDao.deleteValues()
-
-            trackerEntities.forEach { trackerEntity ->
-                database.trackerDataClassDao.insertValues(trackerEntity)
-            }
-
-            withContext(Dispatchers.Main) {
-                Toast.makeText(this@BodyTrackerActivity, "Miery uložené!", Toast.LENGTH_SHORT)
-                    .show()
-                finish()
-            }
+        bodyTrackerViewModel = ViewModelProvider(this).get(BodyTrackerActivityViewModel::class.java)
+        ViewModelProvider(this).get(BodyTrackerActivityViewModel::class.java)
+        bodyTrackerViewModel.loadValues(this@BodyTrackerActivity) {loadedTrackerItems ->
+            adapter.setBodyPartsList(ArrayList(loadedTrackerItems))
+            adapter.notifyDataSetChanged()
         }
     }
 
@@ -148,7 +84,7 @@ class BodyTrackerActivity : AppCompatActivity() {
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.save_values_button) saveValues()
-        return onOptionsItemSelected(item)
+        return true
     }
 
     /**
@@ -162,5 +98,18 @@ class BodyTrackerActivity : AppCompatActivity() {
         val inflater: MenuInflater = menuInflater
         inflater.inflate(R.menu.tracker_menu, menu)
         return true
+    }
+
+    /**
+     * Saves the tracker values to the database.
+     * Retrieves the values from the adapter and converts them into TrackerEntity objects.
+     * Deletes existing values in the database and inserts the new values.
+     * Displays a toast message indicating that the values have been saved.
+     * Finishes the activity.
+     */
+    private fun saveValues() {
+        val trackerList = adapter.getBodyPartsList()
+        bodyTrackerViewModel.saveValues(trackerList, this@BodyTrackerActivity)
+        finish()
     }
 }

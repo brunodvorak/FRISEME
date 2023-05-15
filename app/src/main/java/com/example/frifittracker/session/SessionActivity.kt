@@ -10,15 +10,10 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.frifittracker.R
-import com.example.frifittracker.session.sessionDatabase.ExerciseEntity
-import com.example.frifittracker.session.sessionDatabase.SessionDataDatabase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Activity for managing the sessions.
@@ -29,6 +24,7 @@ class SessionActivity : AppCompatActivity() {
     private lateinit var adapter: SessionAdapterClass
     private lateinit var exeWindow: Dialog
     private lateinit var passedDate: String
+    private lateinit var sessionActivityViewModel: SessionActivityViewModel
 
     /**
      * Called when the activity is starting or restarting.
@@ -43,7 +39,7 @@ class SessionActivity : AppCompatActivity() {
         exeWindow = Dialog(this)
         passedDate = intent.getStringExtra("date").toString()
         adapter = SessionAdapterClass(passedDate)
-
+        sessionActivityViewModel = ViewModelProvider(this).get(SessionActivityViewModel::class.java)
         val sessionItemsList: RecyclerView = findViewById(R.id.sessionItemsList)
         //spravuje pozície itemov
         sessionItemsList.layoutManager = layoutManager
@@ -141,83 +137,46 @@ class SessionActivity : AppCompatActivity() {
     }
 
     /**
-     * Saves the new exercise to the database.
-     * If the exercise list is empty, finishes the activity.
+     * Saves the new exercises to the database and finishes the current activity.
+     *
+     * @param passedDate The date associated with the session.
      */
     private fun saveNewExe() {
-        if (adapter.getExerciseList().isEmpty()) {
-            finish()
-        }
-
         val exerciseList = adapter.getExerciseList()
 
-        val exerciseEntities = exerciseList.map { exercise ->
-            ExerciseEntity(
-                exeName = exercise.getExeName(),
-                sets = exercise.getnumOfSets(),
-                reps = exercise.getnumOfReps(),
-                weight = exercise.getWeight(),
-                date = passedDate
-            )
-        }
-
-        val database = SessionDataDatabase.getInstance(applicationContext)
-
-        GlobalScope.launch(Dispatchers.IO) {
-            // uloží cviky do databázy aj s atribútmi
-            exerciseEntities.forEach { entity ->
-                database.sessionDataClassDao.insertExercise(entity)
-            }
-
-            withContext(Dispatchers.Main) {
-                Toast.makeText(this@SessionActivity, "Tréning uložený!", Toast.LENGTH_SHORT).show()
-                finish()
-            }
+        sessionActivityViewModel.saveExercises(this@SessionActivity, exerciseList, passedDate) {
+            Toast.makeText(this@SessionActivity, "Tréning uložený!", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
     /**
-     * Loads exercises from the database for the current date and updates the UI with the retrieved data.
-     * The function retrieves ExerciseEntity objects from the database based on the passedDate.
-     * The ExerciseEntity objects are then mapped to SessionItem models.
-     * The UI is updated on the main thread by setting the exercise list in the adapter and calling notifyDataSetChanged().
-     * After loading the exercises, they are deleted from the database to avoid duplicates.
+     * Loads exercises from the database and updates the UI with the retrieved data.
      */
     private fun loadExercises() {
-        val database = SessionDataDatabase.getInstance(applicationContext)
-
-        GlobalScope.launch(Dispatchers.IO) {
-            val exerciseEntities =
-                database.sessionDataClassDao.getExercisesByDate(passedDate.toString())
-
-            val exerciseList = exerciseEntities.map { entity ->
-                SessionItem(
-                    exeName = entity.getExeName(),
-                    sets = entity.getnumOfSets(),
-                    reps = entity.getnumOfReps(),
-                    weight = entity.getWeight()
-                )
-            }
-
-            withContext(Dispatchers.Main) {
-                adapter.setExerciseList(ArrayList(exerciseList))
-                adapter.notifyDataSetChanged()
-            }
-
-            database.sessionDataClassDao.deleteExercises(passedDate.toString())
+        sessionActivityViewModel.loadExercises(this@SessionActivity, passedDate) { sessionItems ->
+            adapter.setExerciseList(ArrayList(sessionItems))
+            adapter.notifyDataSetChanged()
         }
     }
 
     /**
-     * Displays a dialog window for adding a new exercise.
-     * The function creates a Dialog instance and sets its content view to the new_exe_dialog layout.
-     * The dialog window is shown to the user.
-     * The function sets click listeners for the close dialog button, save exercise button,
-     * and save and continue button.
-     * When the close dialog button is clicked, the dialog window is dismissed.
-     * When the save exercise button is clicked, the function add a new item to the adapter
-     * and dismisses the dialog window .
-     * When the save and continue button is clicked, the function add a new item to the adapter.
+     * Initializes the options menu for the activity.
+     * Inflates the specified menu resource file, which defines the items to be shown in the menu.
+     * The inflated menu is passed as a parameter to the function.
+     * The function returns true to indicate that the menu has been successfully initialized.
+     */
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.session_menu, menu)
+        return true
+    }
+
+    /**
+     * Shows a dialog window for adding a new exercise.
+     * The dialog window allows the user to enter details of a new exercise.
+     * The user can save the exercise or save and continue adding new exercises.
+     * When the user saves the exercise, the dialog window is dismissed.
      */
     private fun showDialogWindow() {
         exeWindow = Dialog(this)
@@ -286,17 +245,4 @@ class SessionActivity : AppCompatActivity() {
         adapter.notifyItemInserted(adapter.itemCount - 1)
         return true
     }
-
-    /**
-     * Initializes the options menu for the activity.
-     * Inflates the specified menu resource file, which defines the items to be shown in the menu.
-     * The inflated menu is passed as a parameter to the function.
-     * The function returns true to indicate that the menu has been successfully initialized.
-     */
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        val inflater: MenuInflater = menuInflater
-        inflater.inflate(R.menu.session_menu, menu)
-        return true
-    }
-
 }

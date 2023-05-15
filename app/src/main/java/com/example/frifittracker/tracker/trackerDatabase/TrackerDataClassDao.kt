@@ -1,8 +1,9 @@
+package com.example.frifittracker.tracker.trackerDatabase
+
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.frifittracker.tracker.TrackerItem
-import com.example.frifittracker.tracker.trackerDatabase.TrackerEntity
 
 /**
  * Data Access Object (DAO) interface for accessing and manipulating data in the tracker_table of the tracker database.

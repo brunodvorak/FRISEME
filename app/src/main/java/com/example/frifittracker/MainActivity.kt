@@ -1,7 +1,7 @@
 package com.example.frifittracker
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -11,17 +11,10 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.frifittracker.session.SessionActivity
 import com.example.frifittracker.session.SessionAdapterClass
-import com.example.frifittracker.session.SessionItem
-import com.example.frifittracker.session.sessionDatabase.SessionDataDatabase
-import com.example.frifittracker.tracker.BodyTrackerActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,6 +26,7 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     private val calendar = Calendar.getInstance()
     private var adapter = SessionAdapterClass("")
     private lateinit var layoutManager: RecyclerView.LayoutManager
+    private lateinit var mainViewModel: MainActivityViewModel
 
     /**
      * Called when the activity is starting. Performs initialization of the activity,
@@ -47,14 +41,14 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        mainViewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
+
         val toolbar: Toolbar = findViewById(R.id.toolbar_main)
         setSupportActionBar(toolbar)
-
         layoutManager = LinearLayoutManager(this)
         val sessionItemsList: RecyclerView = findViewById(R.id.actualTraining)
         sessionItemsList.layoutManager = layoutManager //spravuje pozície itemov
         sessionItemsList.adapter = adapter // spravuje inputy
-
         updateDate()
         loadExercises()
 
@@ -159,6 +153,12 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         updateDate()
     }
 
+    /**
+     * Callback method that is invoked when the options menu is being created.
+     *
+     * @param menu The options menu in which items are placed.
+     * @return true to display the menu, false otherwise.
+     */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater: MenuInflater = menuInflater
         inflater.inflate(R.menu.add_menu, menu)
@@ -168,63 +168,48 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     /**
      * Inflate the menu resource to create the options menu for the activity.
      *
-     * @param menu The options menu in which items are placed.
+     * @param item Item from itemMenu.
      * @return true for the menu to be displayed, false otherwise.
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val date = findViewById<TextView>(R.id.sessionDateText).text.toString()
         when (item.itemId) {
-            R.id.save_session_button -> sessionActivitySwitch(false)
-            R.id.change_training -> sessionActivitySwitch(true)
-            R.id.params -> trackerActivitySwitch()
+            R.id.save_session_button -> if (adapter.getExerciseList().isNotEmpty()) {
+                val alertDialog = AlertDialog.Builder(this)
+                    .setMessage("Vytvorenie nového tréningu prepíše uložený tréning, chcete pokračovať?")
+                    .setPositiveButton("Pokračovať") { dialog, _ ->
+                        mainViewModel.sessionActivitySwitch(false, this@MainActivity, date)
+                        dialog.dismiss()
+                    }
+                    .setNeutralButton("Upraviť uložený tréning") { dialog, _ ->
+                        mainViewModel.sessionActivitySwitch(true, this@MainActivity, date)
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("Zavrieť") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .create()
+
+                alertDialog.show()
+            } else mainViewModel.sessionActivitySwitch(false, this@MainActivity, date)
+            R.id.change_training -> mainViewModel.sessionActivitySwitch(
+                true,
+                this@MainActivity,
+                date
+            )
+            R.id.params -> mainViewModel.trackerActivitySwitch(this@MainActivity)
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    /**
-     * Start the BodyTrackerActivity to switch to the tracker screen.
-     */
-    private fun trackerActivitySwitch() {
-        val intent = Intent(this@MainActivity, BodyTrackerActivity::class.java)
-        startActivity(intent)
-    }
-
-    /**
-     * Start the SessionActivity to switch to the session screen.
-     *
-     * @param change Flag indicating whether training is being changed or created.
-     */
-    private fun sessionActivitySwitch(change: Boolean) {
-        val intent = Intent(this@MainActivity, SessionActivity::class.java)
-        val date = findViewById<TextView>(R.id.sessionDateText).text.toString()
-        intent.putExtra("change", change)
-        intent.putExtra("date", date)
-        startActivity(intent)
     }
 
     /**
      * Loads exercises from the database based on the selected date and updates the UI with the loaded data.
      */
     private fun loadExercises() {
-        val database = SessionDataDatabase.getInstance(applicationContext)
-
-        GlobalScope.launch(Dispatchers.IO) {
-            val exerciseEntities =
-                database.sessionDataClassDao.getExercisesByDate(findViewById<TextView>(R.id.sessionDateText).text.toString())
-
-            val exerciseList = exerciseEntities.map { entity ->
-                SessionItem(
-                    exeName = entity.getExeName(),
-                    sets = entity.getnumOfSets(),
-                    reps = entity.getnumOfReps(),
-                    weight = entity.getWeight()
-                )
-            }
-
-            withContext(Dispatchers.Main) {
-                // Update your adapter or UI elements with the loaded data
-                adapter.setExerciseList(ArrayList(exerciseList))
-                adapter.notifyDataSetChanged()
-            }
+        val date = findViewById<TextView>(R.id.sessionDateText).text.toString()
+        mainViewModel.loadExercises(this@MainActivity.applicationContext, date) { exerciseList ->
+            adapter.setExerciseList(ArrayList(exerciseList))
+            adapter.notifyDataSetChanged()
         }
     }
 
