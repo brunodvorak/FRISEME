@@ -28,6 +28,8 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     private lateinit var layoutManager: RecyclerView.LayoutManager
     private lateinit var mainViewModel: MainActivityViewModel
 
+    private var alertDialog: AlertDialog? = null
+
     /**
      * Called when the activity is starting. Performs initialization of the activity,
      * such as inflating the layout, setting up the toolbar, initializing the layout manager
@@ -42,13 +44,16 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         setContentView(R.layout.activity_main)
 
         mainViewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
-
         val toolbar: Toolbar = findViewById(R.id.toolbar_main)
         setSupportActionBar(toolbar)
+
         layoutManager = LinearLayoutManager(this)
         val sessionItemsList: RecyclerView = findViewById(R.id.actualTraining)
         sessionItemsList.layoutManager = layoutManager //spravuje pozície itemov
         sessionItemsList.adapter = adapter // spravuje inputy
+
+
+
         updateDate()
         loadExercises()
 
@@ -113,6 +118,8 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         outState.putInt("year", year)
         outState.putInt("month", month)
         outState.putInt("day", day)
+
+        if(alertDialog?.isShowing == true) outState.putBoolean("isShowing", true)
     }
 
     /**
@@ -129,13 +136,15 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
         val year = savedInstanceState.getInt("year")
         val month = savedInstanceState.getInt("month")
         val day = savedInstanceState.getInt("day")
-
         calendar.set(year, month, day)
 
         updateDate()
         adapter.clear()
         loadExercises()
 
+        val date = findViewById<TextView>(R.id.sessionDateText).text.toString()
+        val isShowing = savedInstanceState.getBoolean("isShowing")
+        if (isShowing) showAlertDialog(date)
     }
 
     /**
@@ -166,31 +175,41 @@ class MainActivity : AppCompatActivity(), DatePickerDialog.OnDateSetListener {
     }
 
     /**
-     * Inflate the menu resource to create the options menu for the activity.
+     * Shows an AlertDialog with the specified message and button actions.
+     *
+     * @param date The date to be passed to the button actions.
+     */
+    private fun showAlertDialog(date: String) {
+        alertDialog = AlertDialog.Builder(this)
+            .setMessage("Vytvorenie nového tréningu prepíše uložený tréning, chcete pokračovať?")
+            .setPositiveButton("Pokračovať") { dialog, _ ->
+                mainViewModel.sessionActivitySwitch(false, this@MainActivity, date)
+                dialog.dismiss()
+            }
+            .setNeutralButton("Upraviť uložený tréning") { dialog, _ ->
+                mainViewModel.sessionActivitySwitch(true, this@MainActivity, date)
+                dialog.dismiss()
+            }
+            .setNegativeButton("Zavrieť") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        alertDialog?.show()
+    }
+
+    /**
+     * Creates the options menu for the activity.
      *
      * @param item Item from itemMenu.
      * @return true for the menu to be displayed, false otherwise.
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val date = findViewById<TextView>(R.id.sessionDateText).text.toString()
+
         when (item.itemId) {
             R.id.save_session_button -> if (adapter.getExerciseList().isNotEmpty()) {
-                val alertDialog = AlertDialog.Builder(this)
-                    .setMessage("Vytvorenie nového tréningu prepíše uložený tréning, chcete pokračovať?")
-                    .setPositiveButton("Pokračovať") { dialog, _ ->
-                        mainViewModel.sessionActivitySwitch(false, this@MainActivity, date)
-                        dialog.dismiss()
-                    }
-                    .setNeutralButton("Upraviť uložený tréning") { dialog, _ ->
-                        mainViewModel.sessionActivitySwitch(true, this@MainActivity, date)
-                        dialog.dismiss()
-                    }
-                    .setNegativeButton("Zavrieť") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .create()
-
-                alertDialog.show()
+                showAlertDialog(date)
             } else mainViewModel.sessionActivitySwitch(false, this@MainActivity, date)
             R.id.change_training -> mainViewModel.sessionActivitySwitch(
                 true,

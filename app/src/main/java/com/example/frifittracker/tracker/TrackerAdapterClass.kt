@@ -17,8 +17,11 @@ import com.example.frifittracker.R
  * Adapter class for the Tracker RecyclerView.
  * Handles the display and interaction with the list of TrackerItems.
  */
-class TrackerAdapterClass : RecyclerView.Adapter<TrackerAdapterClass.ViewHolder>() {
+class TrackerAdapterClass(context: Context) :
+    RecyclerView.Adapter<TrackerAdapterClass.ViewHolder>() {
 
+    private var valWindow = Dialog(context)
+    private lateinit var winButton: ImageButton
 
     private var bodyPartsList = arrayListOf<TrackerItem>(
         TrackerItem("Výška", 0.0),
@@ -43,6 +46,16 @@ class TrackerAdapterClass : RecyclerView.Adapter<TrackerAdapterClass.ViewHolder>
     fun onSaveInstanceState(): Parcelable {
         val bundle = Bundle()
         bundle.putSerializable("bodyPartsList", bodyPartsList)
+        bundle.putBoolean("isShowing", valWindow.isShowing)
+
+        if (valWindow.isShowing && valWindow.findViewById<EditText>(R.id.value_input).text.isNotEmpty() && valWindow.findViewById<EditText>(
+                R.id.value_input
+            ).text.isNotBlank()
+        ) {
+            val value =
+                valWindow.findViewById<EditText>(R.id.value_input).text.toString().toDouble()
+            bundle.putDouble("value", value)
+        }
         return bundle
     }
 
@@ -55,6 +68,13 @@ class TrackerAdapterClass : RecyclerView.Adapter<TrackerAdapterClass.ViewHolder>
         bundle?.let {
             bodyPartsList = it.getSerializable("bodyPartsList") as ArrayList<TrackerItem>
             notifyDataSetChanged()
+        }
+
+        if (bundle?.getBoolean("isShowing") != null && bundle.getBoolean("isShowing")) {
+            showDialog()
+            val value = bundle.getDouble("value")
+            if (value != 0.0) valWindow.findViewById<EditText>(R.id.value_input)
+                .setText(value.toString())
         }
     }
 
@@ -88,7 +108,10 @@ class TrackerAdapterClass : RecyclerView.Adapter<TrackerAdapterClass.ViewHolder>
      * @param viewType The type of the view.
      * @return A new instance of ViewHolder.
      */
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackerAdapterClass.ViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): TrackerAdapterClass.ViewHolder {
         val layoutInflater =
             LayoutInflater.from(parent.context).inflate(R.layout.tracker_card, parent, false)
 
@@ -120,12 +143,11 @@ class TrackerAdapterClass : RecyclerView.Adapter<TrackerAdapterClass.ViewHolder>
      * @param context The context in which the dialog should be shown.
      * @return The created dialog.
      */
-    fun showDialog(context: Context): Dialog {
-        val valWindow = Dialog(context)
+    fun showDialog(): ImageButton {
         valWindow.setContentView(R.layout.number_picker_dialog)
         valWindow.show()
-
-        return valWindow
+        winButton = valWindow.findViewById(R.id.save_value_button)
+        return winButton
     }
 
     /**
@@ -148,15 +170,15 @@ class TrackerAdapterClass : RecyclerView.Adapter<TrackerAdapterClass.ViewHolder>
 
             itemView.setOnClickListener {
                 val position: Int = adapterPosition
-                val dialog = showDialog(itemView.context)
+                val button = showDialog()
 
-                val button = dialog.findViewById<ImageButton>(R.id.save_value_button)
                 button.setOnClickListener {
                     val value =
-                        dialog.findViewById<EditText>(R.id.value_input).text.toString().toDouble()
+                        valWindow.findViewById<EditText>(R.id.value_input).text.toString()
+                            .toDouble()
                     bodyPartsList[position].setValue(value)
                     notifyItemChanged(position)
-                    dialog.dismiss()
+                    valWindow.dismiss()
                 }
             }
 

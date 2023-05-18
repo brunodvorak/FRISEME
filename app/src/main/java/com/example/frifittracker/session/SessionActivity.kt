@@ -53,10 +53,11 @@ class SessionActivity : AppCompatActivity() {
         //Priradí toolbar k layoutu
         setSupportActionBar(toolbar)
 
-
-        val change = intent.getBooleanExtra("change", false)
-        if (change) {
-            loadExercises()
+        if(savedInstanceState == null) {
+            val change = intent.getBooleanExtra("change", false)
+            if (change) {
+                loadExercises()
+            }
         }
 
     }
@@ -120,6 +121,7 @@ class SessionActivity : AppCompatActivity() {
         }
 
         adapter.onRestoreInstanceState(savedInstanceState.getParcelable("adapter"))
+        adapter.notifyDataSetChanged()
     }
 
     /**

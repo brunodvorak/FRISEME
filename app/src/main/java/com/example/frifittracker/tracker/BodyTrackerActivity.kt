@@ -32,7 +32,7 @@ class BodyTrackerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_body_tracker)
 
         layoutManager = LinearLayoutManager(this)
-        adapter = TrackerAdapterClass()
+        adapter = TrackerAdapterClass(this)
         val trackerItemsList: RecyclerView = findViewById(R.id.tracker_item_list)
         trackerItemsList.layoutManager = layoutManager //spravuje pozície itemov
         trackerItemsList.adapter = adapter // spravuje inputy
@@ -42,9 +42,11 @@ class BodyTrackerActivity : AppCompatActivity() {
 
         bodyTrackerViewModel = ViewModelProvider(this).get(BodyTrackerActivityViewModel::class.java)
         ViewModelProvider(this).get(BodyTrackerActivityViewModel::class.java)
-        bodyTrackerViewModel.loadValues(this@BodyTrackerActivity) {loadedTrackerItems ->
-            adapter.setBodyPartsList(ArrayList(loadedTrackerItems))
-            adapter.notifyDataSetChanged()
+        if(savedInstanceState == null) {
+            bodyTrackerViewModel.loadValues(this@BodyTrackerActivity) { loadedTrackerItems ->
+                adapter.setBodyPartsList(ArrayList(loadedTrackerItems))
+                adapter.notifyDataSetChanged()
+            }
         }
     }
 
@@ -101,11 +103,8 @@ class BodyTrackerActivity : AppCompatActivity() {
     }
 
     /**
-     * Saves the tracker values to the database.
-     * Retrieves the values from the adapter and converts them into TrackerEntity objects.
-     * Deletes existing values in the database and inserts the new values.
-     * Displays a toast message indicating that the values have been saved.
-     * Finishes the activity.
+     * Saves the values from the adapter's body parts list using the BodyTrackerViewModel,
+     * and finishes the activity.
      */
     private fun saveValues() {
         val trackerList = adapter.getBodyPartsList()
